@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                String @id @default(uuid())
+  name              String
+  email             String @unique
+  password          String
+  role              Role @default(USER)
+
+  bookings          Booking[]
+  favorites         Favorite[]
+  notifications     Notification[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Booking {
+  id                String @id @default(uuid())
+  seatCount         Int
+  status            BookingStatus @default(CONFIRMED)
+  userId            String
+  eventId           String
+
+  user              User   @relation(fields: [userId], references: [id])
+  event             Event  @relation(fields: [eventId], references: [id])
+
+  createdAt         DateTime @default(now())
+}
+
+model Event {
+  id                String @id @default(uuid())
+  title             String
+  description       String
+  category          String
+  location          String
+  totalSeats        String
+  avilableSeats     String
+  price             Float
+  eventDate         DateTime
+
+  bookings          Booking[]
+  favorites         Favorite[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Favorite {
+  id                String @id @default(uuid())
+
+  userId            String
+  eventId           String
+
+  user              User  @relation(fields: [userId], references: [id])
+  event             Event @relation(fields: [eventId], references: [id])
+
+  @@unique([userId,eventId])
+}
+
+model Notification {
+  id                String @id @default(uuid())
+  title             String
+  message           String
+  isRead            Boolean @default(false)
+
+  userId            String
+
+  user              User @relation(fields: [userId], references: [id])
+
+  createdAt         DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
